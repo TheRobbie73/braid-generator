@@ -5,12 +5,13 @@ def main():
     image = Image.new('RGB', (160, 160), "white")
     draw = ImageDraw.Draw(image)
     anchors = generate_anchors((80, 80), 76)
-    anchors.append(anchors[0])
     draw_braid(draw, [[0, 2, 1, 3], [1, 0, 3, 2]], [[1, 3, 2, 0]], anchors, ["darkred", "orange", "darkgreen", "darkblue"], ["red", "yellow", "green", "blue"], 16, 5, 3)
     image = image.resize((640, 640), Image.Resampling.NEAREST)
     image.show()
 
 def generate_anchors(centre, radius):
+    """Generates the anchors for a hexagon-shaped braid.
+    """
     cx, cy = centre
     points = [(cx + radius * cos(i * pi/3 + pi/6), cy + radius * sin(i * pi/3 + pi/6)) for i in range(6)]
     angles = [(i * pi/3 + 5 * pi/6) % (2 * pi) for i in range(6)]
@@ -24,10 +25,24 @@ def generate_anchors(centre, radius):
             point_x = prev_x + ratio * (curr_x - prev_x)
             point_y = prev_y + ratio * (curr_y - prev_y)
             result.append((point_x, point_y, angle))
+    # result.append(result[0])
     return result
         
     
 def draw_braid(image_draw, braid, draw_order, anchors, backcolors, forecolors, braid_width, backwidth, forewidth):
+    """Draws a braid.
+
+    Args:
+        image_draw: the ImageDraw instance used to draw the braid on.
+        braid: A list of list of indices. The length of each inner list must be the same and determines the number of threads in the braid. The indices in each inner list must be within 0 (inclusive) to the number of threads (exclusive) and must be unique (e.g. [0, 2, 1] is allowed but [0, 2, 5] or [0, 0, 1] isn't). Indices are concerned with the start of each segment only (i.e. [[2, 1, 0], [2, 1, 0]] will cause the first and third threads to swap twice). The number of inner lists does not need to match the number of segments; It will loop back to the first inner list when it reaches the last inner list.
+        draw_order: A list of list of indices, similar format to braid. The order in which threads are drawn in each segment, where indices use the order of the threads at the start of the segment. (e.g. [0, 1, 2] will draw the first thread, then the second, then the third. This puts the first thread at the bottom and the third at the top.) The number of inner lists does not need to match either the number of segments or number of lists in braid; It will also loop back.
+        anchors: A list of tuples. Describes the path the braid will take. Tuples are formatted as (x, y, angle), where x and y describes the anchor's position, and angle describes the anchors direction in the range of 0 (inc.) to 2pi (exc.), with 0 pointing right and increasing going clockwise. For a braid that loops back on itself, the first and last anchor must be the same. (This does not guarantee that the same threads will be connected.)
+        backcolors: A list of colors. Determines the color of the "back" of each thread. Color can be represented as its name (e.g. "white", check https://github.com/python-pillow/Pillow/blob/main/src/PIL/ImageColor.py#L169 for a list of available names), as its hex (e.g. "#ffffff"), or as RGB (e.g. (255, 255, 255)).
+        forecolors: A list of colors. Determines the color of the "front" of each thread. Format the same as backcolors. When a thread is drawn, it is first drawn with the backcolor and backwidth, then that is traced by the frontcolor and frontwidth.
+        braid_width: Width of the braid, measured from the centre of the leftmost thread to the centre of the rightmost thread.
+        backwidth: Width of the "back" of each thread. If this is bigger than the forewidth, it gives the effect of a border around the thread.
+        forewidth: Width of the "front" of each thread.
+    """
     num_threads = len(braid[0])
     braid_idx = 0
     draw_order_idx = 0
