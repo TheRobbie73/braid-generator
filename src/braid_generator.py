@@ -5,7 +5,7 @@ def main():
     image = Image.new('RGB', (160, 160), "white")
     draw = ImageDraw.Draw(image)
     anchors = generate_anchors((80, 80), 76)
-    draw_braid(draw, [[0, 2, 1, 3], [1, 0, 3, 2]], [[1, 3, 2, 0]], anchors, ["darkred", "orange", "darkgreen", "darkblue"], ["red", "yellow", "green", "blue"], 16, 5, 3)
+    draw_braid(draw, [[0, 2, 1, 3], [1, 0, 3, 2]], [[1, 3, 2, 0]], anchors, ["darkred", "orange", "darkgreen", "darkblue"], ["red", "yellow", "green", "blue"], 8, 3, 1)
     image = image.resize((640, 640), Image.Resampling.NEAREST)
     image.show()
 
@@ -25,7 +25,7 @@ def generate_anchors(centre, radius):
             point_x = prev_x + ratio * (curr_x - prev_x)
             point_y = prev_y + ratio * (curr_y - prev_y)
             result.append((point_x, point_y, angle))
-    # result.append(result[0])
+    result.append(result[0])
     return result
         
     
